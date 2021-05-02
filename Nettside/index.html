@@ -1,0 +1,60 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <h1>Hello</h1>
+    <canvas id="house" width="500" height="500"></canvas>
+    <script>
+      const houseWidth = 15.5;
+      const stoneDiameter = 1;
+      function drawCircles(canvas) {
+          let ctx = canvas.getContext('2d');
+          let cw = canvas.width;
+          let ch = canvas.height;
+          let colors = ["blue", "white", "red"];
+          let j = 12
+          for (let i = 0; i < 3; i++) {
+              let r = cw * (j / houseWidth);
+              ctx.fillStyle = colors[i];
+              ctx.beginPath();
+              ctx.arc(cw/2, ch/2, r, 0, 2 * Math.PI);
+              ctx.closePath();
+              ctx.fill();
+              j -= 4;
+          }
+      }
+      function drawStone(canvas, position) {
+          let ctx = canvas.getContext('2d');
+          let rpos = position;
+          rpos.x *= canvas.width/3000;
+          rpos.y *= canvas.height/3000;
+          r = canvas.width * (stoneDiameter / houseWidth);
+          ctx.fillStyle = "magenta";
+          ctx.beginPath();
+          ctx.arc(rpos.x, canvas.height - rpos.y, r, 0, 2 * Math.PI);
+          ctx.closePath();
+          ctx.fill();
+      }
+      const canvas = document.getElementById("house");
+
+      let socket = new WebSocket("ws://localhost:8765");
+      socket.onopen = (e) => {
+          console.log("Connected to server");
+          let ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawCircles(canvas);
+          drawStone(canvas, {x: 1500, y: 1500});
+          socket.send("Noice");
+      };
+      socket.onmessage = (msg) => {
+          console.log(msg);
+          let position = JSON.parse(msg.data);
+          let ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawCircles(canvas);
+          drawStone(canvas, position);
+          socket.send("Noice");
+      };
+    </script>
+  </body>
+</html>
